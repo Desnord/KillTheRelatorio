@@ -27,12 +27,12 @@ namespace KillTheRelatorio
 
         }
 
-        public static string IncPadLeituraDig(float a)
+        public static string IncPadLeituraDig(double a)
         {
             return Convert.ToString(a / (2 * Math.Pow(3,0.5)));
         }
 
-        public static string IncPadLeituraAnalog(float a)
+        public static string IncPadLeituraAnalog(double a)
         {
             return Convert.ToString(a / (2 * Math.Pow(6, 0.5)));
         }
@@ -49,6 +49,11 @@ namespace KillTheRelatorio
             dp = Math.Pow((soma/(listValores.Count-1)),0.5);
 
             return Convert.ToString(dp);
+        }
+
+        public static string IncMedicoesRep(double media, List<double> listValores)
+        {
+            return Convert.ToString(Convert.ToDouble(DesvioPadraoExp(media, listValores)) / Math.Pow(listValores.Count, 0.5));
         }
     }
 }
