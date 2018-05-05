@@ -185,6 +185,19 @@ namespace KillTheRelatorio
 
                 DataTable dt = new DataTable();
 
+                dt.Columns.Add("valores");
+
+                foreach (double item in valores)
+                {
+                    var row = dt.NewRow();
+
+                    row[0] = item;
+
+                    dt.Rows.Add(row);
+                }
+
+                /*DataTable dt = new DataTable();
+
                 dt.Columns.Add("");
                 dt.Columns.Add("");
                 dt.Columns.Add("");
@@ -213,7 +226,7 @@ namespace KillTheRelatorio
                 if (valores.Count < 5)
                 {
                     dt.Rows.Add(row);
-                }
+                }*/
 
                 dgvSimples.DataSource = dt;
                 TabControlPrincipal.SelectedTab = tabPageTabela;
