@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 
 namespace KillTheRelatorio
 {
@@ -23,6 +24,7 @@ namespace KillTheRelatorio
 
         private void abrirToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            valores = new List<double>();
 
             if (dlgAbrir.ShowDialog() == DialogResult.OK)
             {
@@ -51,6 +53,10 @@ namespace KillTheRelatorio
             TabControlPrincipal.Appearance = TabAppearance.FlatButtons;
             TabControlPrincipal.ItemSize = new Size(0, 1);
             TabControlPrincipal.SizeMode = TabSizeMode.Fixed;
+
+            tabControlOpcoes.Appearance = TabAppearance.FlatButtons;
+            tabControlOpcoes.ItemSize = new Size(0, 1);
+            tabControlOpcoes.SizeMode = TabSizeMode.Fixed;
         }
 
 
@@ -96,6 +102,7 @@ namespace KillTheRelatorio
             { }
         }
 
+        //Outros calculos
         //---------------------------------------------------------------------------------//
 
         private void desvioPadrãoExperimentalToolStripMenuItem_Click(object sender, EventArgs e)
@@ -151,6 +158,8 @@ namespace KillTheRelatorio
             { }
         }
 
+
+        //---------------------------------------------------------------------------------//
         private void txtA_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             try
@@ -159,15 +168,15 @@ namespace KillTheRelatorio
 
                 if(opcao == 1)
                 {
-                    double ipa = Convert.ToDouble(Incertezas.IncPadLeituraAnalog(a));
+                    double ipa =  Incertezas.IncPadLeituraAnalog(a);
                     incertezas.Add(ipa);
-                    lblResultado.Text = "\u2C99 (analógica): " + ipa;
+                    lblResultado.Text = "\u2C99 (analógica): " + ipa.ToString("N20");
                 }
                 else
                 {
-                    double ipd = Convert.ToDouble(Incertezas.IncPadLeituraDig(a));
+                    double ipd = Incertezas.IncPadLeituraDig(a);
                     incertezas.Add(ipd);
-                    lblResultado.Text = "\u2C99 (digital): " + ipd;
+                    lblResultado.Text = "\u2C99 (digital): " + ipd.ToString("N20");
                 }
             }
             catch(Exception)
@@ -177,6 +186,9 @@ namespace KillTheRelatorio
             txtA.Enabled = false;
         }
 
+
+        //Tab Control Principal
+        //---------------------------------------------------------------------------------//
         private void simplesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             try
@@ -239,11 +251,15 @@ namespace KillTheRelatorio
 
         private void deOcorrenciasToolStripMenuItem_Click(object sender, EventArgs e)
         {
-          /*
+          
             try
             {
                 valores.Sort();
                 double deltaX = (valores[valores.Count - 1] - valores[0]) / Math.Pow(valores.Count, 0.5);
+                string deltaXstr = deltaX.ToString();
+                deltaXstr = deltaXstr.Substring(0, 6);
+                deltaX = Convert.ToDouble(deltaXstr);
+
 
                 DataTable dt = new DataTable();
 
@@ -259,6 +275,7 @@ namespace KillTheRelatorio
                     if(atual == valores[0] && i == 0)
                     {
                         row[0] = "[ " + atual + " ; " + (atual + deltaX) + " )";
+                        ocorre = 1;
                     }
 
                     else if(valores[i] >= atual && valores[i] < atual+deltaX)
@@ -273,7 +290,13 @@ namespace KillTheRelatorio
 
                         row = dt.NewRow();
                         row[0] = "[ " + atual + " ; " + (atual + deltaX) + " )";
-                        ocorre = 0;
+                        ocorre = 1;
+
+                        if(i == valores.Count-1)
+                        {
+                            row[1] = ocorre;
+                            dt.Rows.Add(row);
+                        }
                     }
                 }
 
@@ -281,7 +304,130 @@ namespace KillTheRelatorio
                 TabControlPrincipal.SelectedTab = tabPageOcorrencias;
             }
             catch (Exception)
-            { }*/
+            { }
         }
+
+        private void histogramaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
+            try
+            {
+                this.chartHistograma.Series["Ocorrências"].Points.Clear();
+
+                valores.Sort();
+                double deltaX = (valores[valores.Count - 1] - valores[0]) / Math.Pow(valores.Count, 0.5);
+                string deltaXstr = deltaX.ToString();
+                deltaXstr = deltaXstr.Substring(0, 6);
+                deltaX = Convert.ToDouble(deltaXstr);
+
+                DataTable dt = new DataTable();
+
+                dt.Columns.Add("Intervalo");
+                dt.Columns.Add("Ocorrências");
+
+                var row = dt.NewRow();
+                double atual = valores[0];
+                int ocorre = 0;
+
+                for (int i = 0; i < valores.Count; i++)
+                {
+                    if (atual == valores[0] && i == 0)
+                    {
+                        row[0] = "[ " + atual + " ; " + (atual + deltaX) + " )";
+                        ocorre = 1;
+                    }
+
+                    else if (valores[i] >= atual && valores[i] < atual + deltaX)
+                    {
+                        ocorre++;
+                    }
+                    else if (valores[i] >= atual + deltaX)
+                    {
+                        atual += deltaX;
+                        row[1] = ocorre;
+                        dt.Rows.Add(row);
+
+                        row = dt.NewRow();
+                        row[0] = "[ " + atual + " ; " + (atual + deltaX) + " )";
+                        ocorre = 1;
+
+                        if (i == valores.Count - 1)
+                        {
+                            row[1] = ocorre;
+                            dt.Rows.Add(row);
+                        }
+                    }
+                }
+
+                dgvOcorrencias.DataSource = dt;
+            }
+            catch (Exception)
+            { }
+
+            try
+            {
+                for(int i=0;i< dgvOcorrencias.RowCount;i++)
+                {
+                    this.chartHistograma.Series["Ocorrências"].Points.AddXY(dgvOcorrencias.Rows[i].Cells[0].Value, dgvOcorrencias.Rows[i].Cells[1].Value);
+                }
+            }
+            catch(Exception)
+            { }
+
+            TabControlPrincipal.SelectedTab = tabPageHistograma;
+        }
+
+        private void gráficoLogLogToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+           // TabControlPrincipal.SelectedTab = tabPageLogLog;
+        }
+        //---------------------------------------------------------------------------------//
+        private void cbListaInc_CheckStateChanged(object sender, EventArgs e)
+        {
+            if(cbListaInc.Checked)
+            {
+                try
+                {
+                    incertezas.Sort();
+
+                    DataTable dt = new DataTable();
+
+                    dt.Columns.Add("incertezas");
+
+                    foreach (double item in incertezas)
+                    {
+                        var row = dt.NewRow();
+
+                        row[0] = item.ToString("N20");
+
+                        dt.Rows.Add(row);
+                    }
+
+                    dgvIncertezas.DataSource = dt;
+                }
+                catch(Exception)
+                {
+
+                }
+            }
+            else
+            {
+                dgvIncertezas.DataSource = new DataTable();
+            }
+        }
+
+        private void dgvIncertezas_UserDeletingRow(object sender, DataGridViewRowCancelEventArgs e)
+        {
+            try
+            {
+                int indexDel = e.Row.Index;
+                incertezas.RemoveAt(indexDel);
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
     }
 }

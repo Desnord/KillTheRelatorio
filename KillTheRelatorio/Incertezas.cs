@@ -27,14 +27,14 @@ namespace KillTheRelatorio
 
         }
 
-        public static string IncPadLeituraDig(double a)
+        public static double IncPadLeituraDig(double a)
         {
-            return Convert.ToString(a / (2 * Math.Pow(3,0.5)));
+            return a / (2 * Math.Pow(3,0.5));
         }
 
-        public static string IncPadLeituraAnalog(double a)
+        public static double IncPadLeituraAnalog(double a)
         {
-            return Convert.ToString(a / (2 * Math.Pow(6, 0.5)));
+            return a / (2 * Math.Pow(6, 0.5));
         }
 
         public static string DesvioPadraoExp(double media, List<double> listValores)
